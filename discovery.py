@@ -74,22 +74,17 @@ def determine_role(ip, gateway, local_ip):
 # - rol
 # - hostname
 # - vendor
-#
-# No será 100% exacto, pero ayuda a que el inventario
-# sea más útil y más profesional.
 
 def guess_device_type(role, hostname, vendor):
     hostname_lower = hostname.lower() if hostname != "N/A" else ""
     vendor_lower = vendor.lower() if vendor != "N/A" else ""
 
-    # Casos directos por rol
     if role == "Gateway":
         return "Gateway / Router"
 
     if role == "Local Host":
         return "Local Computer"
 
-    # Pistas por vendor
     if "nest" in vendor_lower:
         return "IoT Device"
 
@@ -108,7 +103,6 @@ def guess_device_type(role, hostname, vendor):
     if "hp" in vendor_lower or "epson" in vendor_lower or "canon" in vendor_lower:
         return "Printer"
 
-    # Pistas por hostname
     if "iphone" in hostname_lower or "android" in hostname_lower:
         return "Phone / Mobile Device"
 
@@ -127,11 +121,47 @@ def guess_device_type(role, hostname, vendor):
     if "laptop" in hostname_lower or "desktop" in hostname_lower or "pc" in hostname_lower:
         return "Computer / Laptop"
 
-    # Si no hay suficientes pistas
     if vendor == "N/A" and hostname == "N/A":
         return "Unknown Device"
 
     return "Smart / Connected Device"
+
+
+# ==============================
+# Port scanning
+# ==============================
+# Esta función revisa algunos puertos comunes para un host.
+#
+# IMPORTANTE:
+# usamos un scanner separado del discovery scanner para no
+# sobrescribir los resultados del escaneo principal.
+
+def scan_common_ports(host):
+    common_ports = "22,53,80,443,445,3389,554"
+    open_ports = []
+
+    try:
+        port_scanner = nmap.PortScanner()
+        port_scanner.scan(hosts=host, arguments=f"-Pn -p {common_ports} --open")
+
+        if host in port_scanner.all_hosts():
+            protocols = port_scanner[host].all_protocols()
+
+            for protocol in protocols:
+                ports = port_scanner[host][protocol].keys()
+
+                for port in sorted(ports):
+                    state = port_scanner[host][protocol][port].get("state", "")
+                    if state == "open":
+                        open_ports.append(str(port))
+
+    except Exception:
+        pass
+
+    if not open_ports:
+        return "None"
+
+    return ", ".join(open_ports)
 
 
 # ==============================
@@ -140,7 +170,16 @@ def guess_device_type(role, hostname, vendor):
 # Esta función imprime una tabla alineada en la terminal.
 
 def print_table(devices):
-    headers = ["IP", "ROLE", "DEVICE_TYPE", "HOSTNAME", "STATE", "MAC", "VENDOR"]
+    headers = [
+        "IP",
+        "ROLE",
+        "DEVICE_TYPE",
+        "HOSTNAME",
+        "STATE",
+        "OPEN_PORTS",
+        "MAC",
+        "VENDOR"
+    ]
 
     rows = []
     for device in devices:
@@ -150,6 +189,7 @@ def print_table(devices):
             device["device_type"],
             device["hostname"],
             device["state"],
+            device["open_ports"],
             device["mac"],
             device["vendor"]
         ])
@@ -183,10 +223,11 @@ def print_table(devices):
 # Esta función:
 # 1. lee argumentos
 # 2. detecta red/gateway/IP local
-# 3. ejecuta el escaneo
+# 3. ejecuta discovery
 # 4. clasifica rol y tipo de dispositivo
-# 5. imprime la tabla
-# 6. guarda JSON y CSV
+# 5. escanea puertos comunes
+# 6. imprime tabla
+# 7. guarda JSON y CSV
 
 def main():
     parser = argparse.ArgumentParser(description="Network Asset Discovery Tool")
@@ -199,7 +240,9 @@ def main():
     detected_network, gateway, local_ip = detect_network_gateway_and_local_ip()
     network = args.network if args.network else detected_network
 
-    scanner = nmap.PortScanner()
+    # Scanner principal solo para discovery
+    discovery_scanner = nmap.PortScanner()
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     print(f"\nScanning network: {network}")
@@ -207,12 +250,16 @@ def main():
     print(f"Local host IP: {local_ip}")
     print(f"Scan time: {timestamp}\n")
 
-    scanner.scan(hosts=network, arguments="-sn")
+    # Fase 1: discovery de hosts activos
+    discovery_scanner.scan(hosts=network, arguments="-sn")
+
+    # Guardamos la lista de hosts ANTES de hacer otros escaneos
+    discovered_hosts = discovery_scanner.all_hosts()
 
     devices = []
 
-    for host in scanner.all_hosts():
-        host_data = scanner[host]
+    for host in discovered_hosts:
+        host_data = discovery_scanner[host]
         addresses = host_data.get("addresses", {})
         vendor_info = host_data.get("vendor", {})
 
@@ -222,12 +269,16 @@ def main():
         role = determine_role(host, gateway, local_ip)
         device_type = guess_device_type(role, hostname, vendor)
 
+        # Fase 2: escaneo de puertos usando scanner separado
+        open_ports = scan_common_ports(host)
+
         device = {
             "ip": host,
             "role": role,
             "device_type": device_type,
             "hostname": hostname,
             "state": host_data.state(),
+            "open_ports": open_ports,
             "mac": mac,
             "vendor": vendor,
             "scan_time": timestamp
@@ -252,6 +303,7 @@ def main():
                 "device_type",
                 "hostname",
                 "state",
+                "open_ports",
                 "mac",
                 "vendor",
                 "scan_time"
