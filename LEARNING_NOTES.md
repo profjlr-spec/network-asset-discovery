@@ -1,244 +1,222 @@
-# LEARNING NOTES - Network Asset Discovery Tool
+# LEARNING NOTES — Network Asset Discovery Tool
 
 These notes explain how the `discovery.py` script works step by step.
 
-The goal of this file is to document the logic of the script so it is easier to understand and maintain later.
+The goal of this file is to make the code easier to understand when reviewing it later.
 
 ---
 
 # 1. What this project does
 
-This project scans a local network and builds a basic inventory of active devices.
+This tool performs **basic network asset discovery**.
 
-It collects information such as:
+It scans a network and identifies active devices.
 
-- IP address
-- device role
-- guessed device type
-- hostname
-- state
-- MAC address
-- vendor
-- scan timestamp
-
-The results are also exported to:
-
-- scan_results.json
-- scan_results.csv
-
----
-
-# 2. Main sections of the script
-
-The script `discovery.py` is organized into these sections:
-
-1. Imports
-2. Network detection
-3. Role classification
-4. Device type guessing
-5. Table formatting
-6. Main program execution
-
----
-
-# 3. Imports
-
-The script imports these modules:
-
-import nmap
-import json
-import csv
-import argparse
-import subprocess
-import ipaddress
-from datetime import datetime
----
-
-# 4. Detecting network information
-
-Function:
-
-detect_network_gateway_and_local_ip()
-
-This function automatically determines:
-
-- the local network
-- the default gateway
-- the local host IP address
-
-It runs the command:
-
-ip route | grep default
-
-Example output:
-
-default via 10.0.0.1 dev wlan0
-
-From this output the script extracts:
-
-Gateway → 10.0.0.1  
-Interface → wlan0
-
-Then it retrieves the IP of that interface:
-
-ip -o -f inet addr show wlan0
-
-Example result:
-
-10.0.0.221/24
-
-This is converted into the network:
-
-10.0.0.0/24
-
----
-
-# 5. Device role classification
-
-Function:
-
-determine_role(ip, gateway, local_ip)
-
-This function determines the role of each device.
-
-Possible roles:
-
-Gateway  
-Local Host  
-Device
-
-Example:
-
-10.0.0.1   -> Gateway  
-10.0.0.221 -> Local Host  
-10.0.0.215 -> Device
-
----
-
-# 6. Device type guessing
-
-Function:
-
-guess_device_type(role, hostname, vendor)
-
-This function attempts to guess what type of device each host might be.
-
-Examples of possible device types:
-
-Gateway / Router  
-Local Computer  
-IoT Device  
-Printer  
-Phone / Mobile Device  
-Smart TV  
-Camera  
-Computer / Laptop  
-Unknown Device  
-Smart / Connected Device
-
-This is not always perfect but makes the asset inventory easier to understand.
-
----
-
-# 7. Running the Nmap scan
-
-The scan is executed with:
-
-scanner.scan(hosts=network, arguments="-sn")
-
-The option "-sn" means:
-
-- discover active hosts
-- no port scanning
-
-This makes the scan faster.
-
----
-
-# 8. Extracting host information
-
-For each discovered host the script collects:
+For each device it collects:
 
 - IP address
-- hostname
-- state
-- MAC address
-- vendor
 - role
-- device type
-- scan time
+- device type guess
+- hostname
+- state
+- MAC address
+- vendor
+- open service ports
 
-Example device record:
-
-{
- "ip": "10.0.0.215",
- "role": "Device",
- "device_type": "IoT Device",
- "hostname": "N/A",
- "state": "up",
- "mac": "18:B4:30:D1:1D:AD",
- "vendor": "Nest Labs",
- "scan_time": "2026-03-08 21:20:56"
-}
-
----
-
-# 9. Sorting devices by IP
-
-Devices are sorted using:
-
-ipaddress.ip_address()
-
-Example order:
-
-10.0.0.1  
-10.0.0.66  
-10.0.0.175  
-10.0.0.215  
-10.0.0.220  
-10.0.0.221
-
----
-
-# 10. Printing the terminal table
-
-Function:
-
-print_table(devices)
-
-Example output:
-
-IP          ROLE        DEVICE_TYPE               HOSTNAME  STATE  MAC                VENDOR
-10.0.0.1    Gateway     Gateway / Router          _gateway  up     F8:79:0A:25:55:9E  Arris Group
-10.0.0.221  Local Host  Local Computer            Friday    up     N/A                N/A
-10.0.0.215  Device      IoT Device                N/A       up     18:B4:30:D1:1D:AD  Nest Labs
-
----
-
-# 11. Saving results
-
-The script exports results to two files:
-
-scan_results.json  
+It also exports the results to:
+scan_results.json
 scan_results.csv
 
-These files are useful for:
+---
 
-- asset inventories
-- documentation
-- importing into other tools
-- automation workflows
+# 2. High level workflow
+
+The script works in two main phases:
+
+### Phase 1 — Host discovery
+
+Nmap is used to find active hosts in the network.
+
+Command used internally:
+nmap -sn
+
+This performs a **ping scan** without scanning ports.
 
 ---
 
-# 12. Running the script
+### Phase 2 — Port scanning
 
-Basic scan:
+For each discovered host, the script scans a small set of common ports:
+22
+53
+80
+443
+445
+3389
+554
 
-python discovery.py
+These ports represent common services such as:
 
-Full scan (recommended):
+- SSH
+- DNS
+- Web servers
+- File sharing
+- Remote desktop
+- IP cameras
 
-sudo ./venv/bin/python discovery.py
+---
 
-Running with sudo usually provides better device information.
+# 3. Main sections of discovery.py
+
+The script is organized into several sections.
+
+### Imports
+
+Libraries used:
+
+- `nmap`
+- `json`
+- `csv`
+- `argparse`
+- `subprocess`
+- `ipaddress`
+- `datetime`
+
+These support:
+
+- network scanning
+- exporting results
+- parsing command arguments
+- detecting network configuration
+
+---
+
+### Network detection
+
+Function:
+detect_network_gateway_and_local_ip()
+
+This function determines:
+
+- the local network
+- the gateway IP
+- the local machine IP
+
+It uses Linux commands like:
+ip route
+ip addr
+
+---
+
+### Role classification
+
+Function:
+determine_role()
+
+This determines whether the device is:
+
+- Gateway
+- Local Host
+- Device
+
+---
+
+### Device type guessing
+
+Function:
+guess_device_type()
+
+This attempts to infer the device type using:
+
+- hostname
+- vendor
+- device role
+
+Examples:
+Nest → IoT Device
+Intel → Computer
+HP → Printer
+
+---
+
+### Port scanning
+
+Function:
+scan_common_ports()
+
+This scans common ports using Nmap.
+
+Example scan:
+nmap -Pn -p 22,53,80,443,445,3389,554
+
+
+Open ports are stored and formatted.
+
+---
+
+### Service name mapping
+
+Function:
+get_service_name()
+
+This converts port numbers into known services.
+
+Example:
+22 → SSH
+53 → DNS
+80 → HTTP
+443 → HTTPS
+
+Output example:
+443(HTTPS)
+
+---
+
+### Table formatting
+
+Function:
+print_table()
+
+This prints results in a clean aligned table.
+
+It dynamically calculates column widths.
+
+---
+
+### Data export
+
+Results are saved as:
+scan_results.json
+scan_results.csv
+
+These can be used for:
+
+- automation
+- asset inventories
+- reporting
+- data analysis
+
+---
+
+# 4. Why this project is useful
+
+This project demonstrates skills in:
+
+- Python scripting
+- Linux networking
+- Nmap automation
+- device discovery
+- basic port scanning
+- data processing
+
+---
+
+# 5. Possible improvements
+
+Future ideas:
+
+- OS detection
+- deeper port scanning
+- vulnerability checks
+- HTML reports
+- network visualization
