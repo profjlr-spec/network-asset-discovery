@@ -1,40 +1,63 @@
 # Network Asset Discovery Tool
 
-A Python-based network discovery tool that scans a local network and generates an inventory of active devices.
+A simple Python tool that scans a local network and discovers active devices using **Nmap**.
 
-This project was built to strengthen practical skills in:
+This tool is designed as a **learning project for IT, networking, and cybersecurity**. It automatically detects the local network, identifies active hosts, and collects useful asset information such as IP address, hostname, MAC address, and vendor.
+
+The results are displayed in a clean terminal table and exported to **JSON** and **CSV** formats.
+
+---
+
+# Project Goals
+
+This project was built to practice and demonstrate skills in:
 
 - Linux
 - Networking
 - Python scripting
+- Nmap usage
 - IT automation
+- basic asset discovery
 
-## Features
+---
 
-- Automatically detects the local network
-- Detects the default gateway
-- Detects the local host IP
-- Scans for active hosts using Nmap
-- Identifies:
-  - IP address
-  - device role
-  - hostname
-  - device state
-  - MAC address
-  - vendor (when available)
-- Displays results in a formatted terminal table
-- Exports scan results to:
-  - JSON
-  - CSV
-- Supports manual network range input with `--network`
+# Features
 
-## Requirements
+The tool automatically:
+
+- Detects the **local network range**
+- Detects the **default gateway**
+- Detects the **local host IP**
+- Scans for active hosts using **Nmap**
+
+For each discovered device it attempts to identify:
+
+- IP address
+- device role (Gateway / Local Host / Device)
+- hostname
+- device state
+- MAC address
+- vendor (when available)
+
+Output includes:
+
+- formatted terminal table
+- JSON export
+- CSV export
+
+The tool also supports manually specifying a network range.
+
+---
+
+# Requirements
 
 - Python 3
 - Nmap
-- python-nmap
+- python-nmap library
 
-## Installation
+---
+
+# Installation
 
 Clone the repository:
 
