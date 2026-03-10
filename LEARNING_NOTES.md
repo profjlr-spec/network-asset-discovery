@@ -1,222 +1,176 @@
-# LEARNING NOTES — Network Asset Discovery Tool
+# Learning Notes
+Network Asset Discovery Tool
 
-These notes explain how the `discovery.py` script works step by step.
+Author: Juan Ramos
+Project: Network Asset Discovery Tool
+Language: Python
+Environment: Linux
 
-The goal of this file is to make the code easier to understand when reviewing it later.
+--------------------------------------------------
 
----
+PROJECT PURPOSE
 
-# 1. What this project does
+The goal of this project is to build a practical network discovery tool
+that scans a local network and identifies connected devices.
 
-This tool performs **basic network asset discovery**.
+This project helps develop skills in:
 
-It scans a network and identifies active devices.
+- Linux networking
+- Python scripting
+- Network scanning
+- IT automation
+- Security reconnaissance
 
-For each device it collects:
+This type of tool is similar to the first step performed during a
+network security assessment or penetration test.
+
+--------------------------------------------------
+
+WHAT THE TOOL DOES
+
+The tool scans the local network and gathers information about devices.
+
+The script performs the following tasks:
+
+1. Detects the local network range
+2. Identifies the gateway
+3. Scans the network for active hosts
+4. Attempts OS detection using nmap
+5. Identifies open ports
+6. Attempts to determine device type
+7. Displays results in a table
+8. Saves results to JSON and CSV files
+
+Example output fields:
 
 - IP address
-- role
-- device type guess
-- hostname
-- state
+- Device role
+- Device type
+- OS guess
+- Hostname
+- Device state
+- Open ports
 - MAC address
-- vendor
-- open service ports
+- Vendor
 
-It also exports the results to:
-scan_results.json
-scan_results.csv
+--------------------------------------------------
 
----
+WHY THIS PROJECT IS IMPORTANT
 
-# 2. High level workflow
+This project simulates real tasks used by:
 
-The script works in two main phases:
+- Network engineers
+- Cybersecurity analysts
+- IT administrators
+- Penetration testers
 
-### Phase 1 — Host discovery
+Before securing a network, professionals must first
+discover what devices exist on the network.
 
-Nmap is used to find active hosts in the network.
+This process is called:
 
-Command used internally:
-nmap -sn
+Network Discovery
+or
+Network Enumeration
 
-This performs a **ping scan** without scanning ports.
+--------------------------------------------------
 
----
+TECHNOLOGIES USED
 
-### Phase 2 — Port scanning
+Python
+Linux
+Nmap
+ARP scanning
+JSON data export
+CSV reporting
 
-For each discovered host, the script scans a small set of common ports:
-22
-53
-80
-443
-445
-3389
-554
+Python libraries used:
 
-These ports represent common services such as:
+python-nmap
+socket
+subprocess
+datetime
+csv
+json
 
-- SSH
-- DNS
-- Web servers
-- File sharing
-- Remote desktop
-- IP cameras
+--------------------------------------------------
 
----
+SKILLS PRACTICED
 
-# 3. Main sections of discovery.py
+Linux command line usage
+Python scripting
+Network scanning techniques
+Basic automation
+Parsing command output
+Data formatting
+Writing structured output files
 
-The script is organized into several sections.
+--------------------------------------------------
 
-### Imports
+LESSONS LEARNED
 
-Libraries used:
+Network scanning can take time depending on:
 
-- `nmap`
-- `json`
-- `csv`
-- `argparse`
-- `subprocess`
-- `ipaddress`
-- `datetime`
-
-These support:
-
-- network scanning
-- exporting results
-- parsing command arguments
-- detecting network configuration
-
----
-
-### Network detection
-
-Function:
-detect_network_gateway_and_local_ip()
-
-This function determines:
-
-- the local network
-- the gateway IP
-- the local machine IP
-
-It uses Linux commands like:
-ip route
-ip addr
-
----
-
-### Role classification
-
-Function:
-determine_role()
-
-This determines whether the device is:
-
-- Gateway
-- Local Host
-- Device
-
----
-
-### Device type guessing
-
-Function:
-guess_device_type()
-
-This attempts to infer the device type using:
-
-- hostname
-- vendor
-- device role
-
-Examples:
-Nest → IoT Device
-Intel → Computer
-HP → Printer
-
----
-
-### Port scanning
-
-Function:
-scan_common_ports()
-
-This scans common ports using Nmap.
-
-Example scan:
-nmap -Pn -p 22,53,80,443,445,3389,554
-
-
-Open ports are stored and formatted.
-
----
-
-### Service name mapping
-
-Function:
-get_service_name()
-
-This converts port numbers into known services.
-
-Example:
-22 → SSH
-53 → DNS
-80 → HTTP
-443 → HTTPS
-
-Output example:
-443(HTTPS)
-
----
-
-### Table formatting
-
-Function:
-print_table()
-
-This prints results in a clean aligned table.
-
-It dynamically calculates column widths.
-
----
-
-### Data export
-
-Results are saved as:
-scan_results.json
-scan_results.csv
-
-These can be used for:
-
-- automation
-- asset inventories
-- reporting
-- data analysis
-
----
-
-# 4. Why this project is useful
-
-This project demonstrates skills in:
-
-- Python scripting
-- Linux networking
-- Nmap automation
-- device discovery
-- basic port scanning
-- data processing
-
----
-
-# 5. Possible improvements
-
-Future ideas:
-
+- network size
+- scanning method
 - OS detection
-- deeper port scanning
-- vulnerability checks
-- HTML reports
-- network visualization
+- number of hosts
+
+OS detection using Nmap is powerful but slow.
+
+For this reason the script was improved in Version 3
+to limit OS detection to key devices such as:
+
+- gateway
+- local machine
+
+This significantly improves scan speed.
+
+--------------------------------------------------
+
+REAL WORLD APPLICATION
+
+Tools like this are commonly used in:
+
+Network troubleshooting
+Asset inventory
+Security audits
+Incident response
+Penetration testing
+
+Many enterprise tools perform similar functions:
+
+Nmap
+Nessus
+OpenVAS
+Qualys
+Rapid7 InsightVM
+
+--------------------------------------------------
+
+FUTURE IMPROVEMENTS
+
+Possible improvements for this tool include:
+
+- threaded scanning for faster results
+- service detection
+- web interface
+- network topology visualization
+- scheduled automated scans
+- alerting when new devices appear
+
+--------------------------------------------------
+
+INTERVIEW TALKING POINT
+
+If asked about this project in an interview:
+
+"I built a Python-based network discovery tool that scans
+a local network, identifies devices, performs OS detection,
+and generates structured reports in JSON and CSV format.
+The goal of the project was to practice Linux networking,
+automation, and security reconnaissance techniques."
+
+--------------------------------------------------
+
+END OF FILE
