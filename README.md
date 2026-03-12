@@ -1,225 +1,193 @@
-# Network Asset Discovery Tool
+# Network Asset Discovery & Security Monitoring Tool
 
-A Python-based network discovery and asset inventory tool built for learning Linux networking, Python automation, and cybersecurity fundamentals.
+A Python-based network discovery and security monitoring tool designed to identify devices on a network, analyze exposed services, and detect potential security risks.
 
-The tool scans a local network and builds an inventory of active devices including:
+This project simulates early-stage capabilities found in professional cybersecurity tools used by SOC teams and network administrators.
 
-- IP address
-- device role
-- device type guess
-- hostname
-- device state
-- open ports
-- MAC address
-- vendor
-- operating system guess
+--------------------------------------------------
 
-The results are displayed in a formatted terminal table and exported to JSON and CSV files.
+PROJECT OVERVIEW
+
+The tool performs automated network scanning and device analysis to provide visibility into devices connected to a network.
+
+It helps identify:
+
+• Unknown devices  
+• IoT devices  
+• Exposed services  
+• Insecure legacy protocols  
+• Network changes between scans  
 
 --------------------------------------------------
 
 FEATURES
 
-Network Discovery
+Network Asset Discovery
 
-The tool automatically detects:
+Detects active devices on a network using Nmap host discovery.
 
-- local network range
-- default gateway
-- local host IP
+Device Enumeration
 
-It uses Nmap host discovery to find active devices.
+Identifies:
 
---------------------------------------------------
+• IP address  
+• Hostname  
+• MAC address  
+• Vendor information  
 
-Device Classification
+Device Fingerprinting
 
-Each discovered host is classified by role:
+Classifies devices based on detected characteristics such as:
 
-- Gateway
-- Local Host
-- Device
+• Open ports  
+• Vendor information  
+• Service banners  
+• OS detection  
 
-The script also attempts to guess the device type using:
+Possible device classifications include:
 
-- hostname
-- vendor
-- device role
-
-Example device types:
-
-- Gateway / Router
-- Computer / Laptop
-- IoT Device
-- Printer
-- Smart TV
-- Camera
-- Smart / Connected Device
-- Unknown Device
+• Gateway / Router  
+• Workstation  
+• IoT Device  
+• Smart Device  
+• Unknown Device  
 
 --------------------------------------------------
 
-Port Scanning
+PORT SCANNING
 
-The tool scans common ports:
+The tool scans commonly used ports including:
 
-22 (SSH)  
-53 (DNS)  
-80 (HTTP)  
-443 (HTTPS)  
-445 (SMB)  
-3389 (RDP)  
-554 (RTSP)
+21   FTP  
+22   SSH  
+23   TELNET  
+53   DNS  
+80   HTTP  
+443  HTTPS  
+445  SMB  
+554  RTSP  
+3389 RDP  
+8080 HTTP alternative  
 
-Ports are displayed with service names.
+These ports help identify services running on discovered devices.
+
+--------------------------------------------------
+
+SECURITY RISK DETECTION
+
+The tool flags insecure or risky services.
+
+Examples include:
+
+TELNET (23)  
+FTP (21)  
+SMB (445)  
+RDP (3389)
+
+Example output:
+
+RISK_LEVEL: High  
+SECURITY_FLAGS: Telnet is insecure and should not be exposed
+
+--------------------------------------------------
+
+NETWORK CHANGE DETECTION
+
+The tool compares current scan results with previous scans.
+
+It detects:
+
+• New devices connected to the network  
+• Devices that disappeared  
+
+Example output:
+
+NEW DEVICES DETECTED:
++ 10.0.0.215
+
+DEVICES NO LONGER PRESENT:
+- 10.0.0.103
+
+--------------------------------------------------
+
+SERVICE CHANGE DETECTION
+
+The tool detects changes in exposed services.
 
 Example:
 
-80(HTTP), 443(HTTPS)
+SERVICE CHANGE DETECTED: 10.0.0.221
+
+New open ports:
++ 23(TELNET)
+
+Closed ports:
+- 22(SSH)
+
+This capability helps identify configuration changes or suspicious activity.
 
 --------------------------------------------------
 
-OS Detection
+OUTPUT FILES
 
-The tool attempts operating system detection using Nmap fingerprinting.
-
-To keep the scan fast, OS detection only runs when:
-
-- the device is the gateway
-- the device is the local host
-- the device has open ports
-
-If OS detection is skipped the output shows:
-
-Skipped
-
-Example OS results:
-
-Linux  
-Windows  
-macOS / iOS  
-Router / Network OS  
-Unknown
-
---------------------------------------------------
-
-Example Output
-
-Example terminal output:
-
-IP          ROLE        DEVICE_TYPE               OS_GUESS  HOSTNAME  STATE  OPEN_PORTS
-10.0.0.1    Gateway     Gateway / Router          Linux     _gateway  up     53(DNS),80(HTTP),443(HTTPS)
-10.0.0.57   Device      Computer / Laptop         Skipped   N/A       up     None
-10.0.0.221  Local Host  Local Computer            Linux     Friday    up     None
-
---------------------------------------------------
-
-Output Files
-
-After each scan the tool exports:
+Scan results are exported to:
 
 scan_results.json  
-scan_results.csv
+scan_results.csv  
 
-These files can be used for:
-
-- asset inventory
-- reporting
-- automation
-- analysis
+These files allow additional analysis or integration with other tools.
 
 --------------------------------------------------
 
-Requirements
+TECHNOLOGIES USED
 
-Python 3  
+Python  
+Linux  
 Nmap  
+TCP sockets  
+JSON / CSV data processing  
 
-Python library:
+Python Libraries
 
-python-nmap
-
---------------------------------------------------
-
-Installation
-
-Clone repository
-
-git clone https://github.com/profjlr-spec/network-asset-discovery.git
-
-Enter project directory
-
-cd network-asset-discovery
-
-Create virtual environment
-
-python3 -m venv venv
-
-Activate virtual environment
-
-source venv/bin/activate
-
-Install dependencies
-
-pip install -r requirements.txt
-
-Install Nmap if needed
-
-sudo apt install nmap
+python-nmap  
+socket  
+ssl  
+ipaddress  
+datetime  
 
 --------------------------------------------------
 
-Usage
+SECURITY USE CASES
 
-Run automatic network scan
+Home network monitoring  
+Small business asset visibility  
+Cybersecurity lab experiments  
+Learning network enumeration techniques  
 
-sudo ./venv/bin/python discovery.py
+The project demonstrates concepts used by tools such as:
 
-Scan a specific network
-
-sudo ./venv/bin/python discovery.py --network 192.168.1.0/24
-
---------------------------------------------------
-
-Project Purpose
-
-This project was created to practice:
-
-- Python scripting
-- Linux networking
-- network discovery
-- IT automation
-- cybersecurity fundamentals
+Nmap  
+Nessus  
+Lansweeper  
+Armis  
 
 --------------------------------------------------
 
-Learning Goals
+FUTURE IMPROVEMENTS
 
-The project demonstrates:
+Possible enhancements include:
 
-- Nmap automation with Python
-- host discovery
-- port scanning
-- OS fingerprinting
-- structured data export
-
---------------------------------------------------
-
-Future Improvements
-
-Possible future improvements include:
-
-- deeper service detection
-- improved device fingerprinting
-- vulnerability scanning
-- web dashboard
-- network topology visualization
-- automated asset inventory
+• Real-time monitoring  
+• Banner detection improvements  
+• IoT device identification  
+• Web dashboard visualization  
+• Security alerting system  
 
 --------------------------------------------------
 
-Author
+AUTHOR
 
 Juan Ramos
 
-IT Support | Linux | Networking | Cybersecurity Learning Project
+Cybersecurity and network security learning project.
+
