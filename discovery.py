@@ -1,6 +1,14 @@
 # ==============================
 # Imports
 # ==============================
+# Librerías para:
+# - escaneo con nmap
+# - guardar JSON y CSV
+# - argumentos de terminal
+# - comandos de Linux
+# - redes/IPs
+# - fecha/hora
+# - conexiones TCP para banner grabbing
 
 import nmap
 import json
@@ -8,6 +16,8 @@ import csv
 import argparse
 import subprocess
 import ipaddress
+import socket
+import ssl
 from datetime import datetime
 
 
@@ -238,27 +248,118 @@ def should_run_os_detection(role, open_ports):
 
 
 # ==============================
+# Banner detection helpers
+# ==============================
+# Intenta obtener banners simples de servicios abiertos.
+# Esto ayuda a identificar:
+# - OpenSSH
+# - Apache / nginx
+# - cámaras IP
+# - paneles web
+# - software expuesto
+
+def grab_tcp_banner(host, port, timeout=2):
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            sock.settimeout(timeout)
+            data = sock.recv(1024)
+            if data:
+                return data.decode(errors="ignore").strip().replace("\r", " ").replace("\n", " ")
+    except Exception:
+        pass
+    return "N/A"
+
+
+def grab_http_banner(host, port, use_ssl=False, timeout=3):
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            sock.settimeout(timeout)
+
+            if use_ssl:
+                context = ssl.create_default_context()
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+                sock = context.wrap_socket(sock, server_hostname=host)
+
+            request = (
+                "HEAD / HTTP/1.1\r\n"
+                f"Host: {host}\r\n"
+                "User-Agent: banner-check\r\n"
+                "Connection: close\r\n\r\n"
+            )
+            sock.sendall(request.encode())
+            data = sock.recv(2048).decode(errors="ignore")
+
+            for line in data.splitlines():
+                line_lower = line.lower()
+                if line_lower.startswith("server:"):
+                    return line.strip()
+
+            if data:
+                first_line = data.splitlines()[0].strip()
+                return first_line
+
+    except Exception:
+        pass
+
+    return "N/A"
+
+
+def detect_banners(host, open_ports):
+    banners = []
+
+    if open_ports == "None":
+        return "None"
+
+    ports = []
+    for item in open_ports.split(","):
+        item = item.strip()
+        if "(" in item:
+            port_str = item.split("(")[0]
+            try:
+                ports.append(int(port_str))
+            except ValueError:
+                pass
+
+    for port in ports:
+        banner = "N/A"
+
+        if port == 22:
+            banner = grab_tcp_banner(host, 22)
+
+        elif port == 23:
+            banner = grab_tcp_banner(host, 23)
+
+        elif port in [80, 8080]:
+            banner = grab_http_banner(host, port, use_ssl=False)
+
+        elif port == 443:
+            banner = grab_http_banner(host, 443, use_ssl=True)
+
+        if banner != "N/A" and banner:
+            banners.append(f"{port}:{banner[:60]}")
+
+    if not banners:
+        return "None"
+
+    return " | ".join(banners)
+
+
+# ==============================
 # Advanced device fingerprinting
 # ==============================
 # Mejora la clasificación usando:
-# - device_type básico
-# - puertos abiertos
+# - clasificación básica
+# - puertos
 # - vendor
 # - hostname
 # - os_guess
-#
-# Esto ayuda a detectar:
-# - IP Camera
-# - Printer
-# - NAS / File Server
-# - Web Server / Admin Interface
-# - Router / Gateway
-# - Workstation
-# - IoT Device
+# - banners
 
-def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role):
+def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role, banners):
     vendor_lower = vendor.lower() if vendor != "N/A" else ""
     hostname_lower = hostname.lower() if hostname != "N/A" else ""
+    banners_lower = banners.lower() if banners != "None" else ""
     ports = set() if open_ports == "None" else set(
         port.strip() for port in open_ports.split(",")
     )
@@ -275,6 +376,9 @@ def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role
     if "camera" in hostname_lower or "cam" in hostname_lower:
         return "IP Camera"
 
+    if "goahead" in banners_lower or "rtsp" in banners_lower:
+        return "IP Camera"
+
     if "printer" in hostname_lower:
         return "Printer"
 
@@ -283,6 +387,9 @@ def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role
 
     if "445(SMB)" in ports:
         return "NAS / File Server"
+
+    if "openssh" in banners_lower and role == "Device":
+        return "Managed Linux Device"
 
     if (
         "80(HTTP)" in ports
@@ -311,9 +418,10 @@ def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role
 # ==============================
 # Asigna nivel de riesgo y banderas.
 
-def assess_security_risk(device_type, open_ports, role):
+def assess_security_risk(device_type, open_ports, role, banners):
     flags = []
     score = 0
+    banners_lower = banners.lower() if banners != "None" else ""
 
     if device_type == "IoT Device":
         flags.append("Possible insecure IoT device")
@@ -321,7 +429,7 @@ def assess_security_risk(device_type, open_ports, role):
 
     if device_type == "IP Camera":
         flags.append("Possible exposed camera device")
-        score += 2
+        score += 3
 
     if device_type == "Smart / Connected Device":
         flags.append("Smart device needs review")
@@ -360,16 +468,24 @@ def assess_security_risk(device_type, open_ports, role):
         score += 1
 
     if "554(RTSP)" in open_ports:
-        flags.append("Camera or stream service exposed")
+        flags.append("Camera or video stream service exposed")
+        score += 2
+
+    if "goahead" in banners_lower:
+        flags.append("Possible embedded web interface detected")
+        score += 1
+
+    if "apache" in banners_lower or "nginx" in banners_lower or "lighttpd" in banners_lower:
+        flags.append("Web server banner detected")
         score += 1
 
     if open_ports != "None" and role == "Device":
         flags.append("Open ports require review")
         score += 1
 
-    if score >= 4:
+    if score >= 5:
         risk_level = "High"
-    elif score >= 2:
+    elif score >= 3:
         risk_level = "Medium"
     else:
         risk_level = "Low"
@@ -383,7 +499,6 @@ def assess_security_risk(device_type, open_ports, role):
 # ==============================
 # Scan history loading
 # ==============================
-# Carga el escaneo anterior.
 
 def load_previous_scan():
     try:
@@ -396,7 +511,6 @@ def load_previous_scan():
 # ==============================
 # Scan history saving
 # ==============================
-# Guarda el escaneo actual.
 
 def save_current_scan(devices):
     with open("previous_scan.json", "w") as file:
@@ -406,7 +520,6 @@ def save_current_scan(devices):
 # ==============================
 # Device change detection
 # ==============================
-# Detecta dispositivos nuevos o desaparecidos.
 
 def detect_network_changes(previous_devices, current_devices):
     previous_ips = {device["ip"] for device in previous_devices}
@@ -432,7 +545,6 @@ def detect_network_changes(previous_devices, current_devices):
 # ==============================
 # Service change detection
 # ==============================
-# Detecta puertos nuevos o cerrados.
 
 def detect_service_changes(previous_devices, current_devices):
     previous_map = {device["ip"]: device for device in previous_devices}
@@ -490,6 +602,7 @@ def print_table(devices):
         "OS_GUESS",
         "STATE",
         "OPEN_PORTS",
+        "BANNERS",
         "RISK_LEVEL",
         "SECURITY_FLAGS"
     ]
@@ -503,6 +616,7 @@ def print_table(devices):
             device["os_guess"],
             device["state"],
             device["open_ports"],
+            device["banners"],
             device["risk_level"],
             device["security_flags"]
         ])
@@ -512,7 +626,7 @@ def print_table(devices):
         max_width = len(header)
         for row in rows:
             max_width = max(max_width, len(str(row[i])))
-        col_widths.append(max_width)
+        col_widths.append(min(max_width, 65))
 
     header_line = "  ".join(
         header.ljust(col_widths[i]) for i, header in enumerate(headers)
@@ -525,9 +639,13 @@ def print_table(devices):
     print(separator_line)
 
     for row in rows:
-        print("  ".join(
-            str(row[i]).ljust(col_widths[i]) for i in range(len(headers))
-        ))
+        formatted_row = []
+        for i in range(len(headers)):
+            value = str(row[i])
+            if len(value) > col_widths[i]:
+                value = value[:col_widths[i] - 3] + "..."
+            formatted_row.append(value.ljust(col_widths[i]))
+        print("  ".join(formatted_row))
 
 
 # ==============================
@@ -539,11 +657,12 @@ def print_table(devices):
 # 3. clasificar dispositivos
 # 4. escanear puertos
 # 5. detectar OS selectivamente
-# 6. fingerprinting avanzado
-# 7. evaluar riesgo
-# 8. imprimir tabla
-# 9. comparar con scan anterior
-# 10. guardar scan actual
+# 6. detectar banners
+# 7. fingerprinting avanzado
+# 8. evaluar riesgo
+# 9. imprimir tabla
+# 10. comparar con scan anterior
+# 11. guardar scan actual
 
 def main():
     parser = argparse.ArgumentParser(description="Network Asset Discovery Tool")
@@ -589,19 +708,23 @@ def main():
         else:
             os_guess = "Skipped"
 
+        banners = detect_banners(host, open_ports)
+
         device_type = fingerprint_device(
             device_type=basic_device_type,
             open_ports=open_ports,
             vendor=vendor,
             hostname=hostname,
             os_guess=os_guess,
-            role=role
+            role=role,
+            banners=banners
         )
 
         risk_level, security_flags = assess_security_risk(
             device_type=device_type,
             open_ports=open_ports,
-            role=role
+            role=role,
+            banners=banners
         )
 
         device = {
@@ -612,6 +735,7 @@ def main():
             "hostname": hostname,
             "state": host_data.state(),
             "open_ports": open_ports,
+            "banners": banners,
             "mac": mac,
             "vendor": vendor,
             "risk_level": risk_level,
@@ -645,6 +769,7 @@ def main():
                 "hostname",
                 "state",
                 "open_ports",
+                "banners",
                 "mac",
                 "vendor",
                 "risk_level",
