@@ -1,14 +1,6 @@
 # ==============================
 # Imports
 # ==============================
-# Librerías para:
-# - escaneo con nmap
-# - guardar JSON y CSV
-# - argumentos de terminal
-# - comandos de Linux
-# - redes/IPs
-# - fecha/hora
-# - conexiones TCP para banner grabbing
 
 import nmap
 import json
@@ -24,10 +16,6 @@ from datetime import datetime
 # ==============================
 # Network detection functions
 # ==============================
-# Detecta automáticamente:
-# - red local
-# - gateway
-# - IP local
 
 def detect_network_gateway_and_local_ip():
     try:
@@ -56,10 +44,6 @@ def detect_network_gateway_and_local_ip():
 # ==============================
 # Device role classification
 # ==============================
-# Clasifica el rol del dispositivo:
-# - Gateway
-# - Local Host
-# - Device
 
 def determine_role(ip, gateway, local_ip):
     if ip == gateway:
@@ -72,10 +56,6 @@ def determine_role(ip, gateway, local_ip):
 # ==============================
 # Basic device type guessing
 # ==============================
-# Primer intento de clasificación usando:
-# - rol
-# - hostname
-# - vendor
 
 def guess_device_type(role, hostname, vendor):
     hostname_lower = hostname.lower() if hostname != "N/A" else ""
@@ -132,7 +112,6 @@ def guess_device_type(role, hostname, vendor):
 # ==============================
 # Port to service mapping
 # ==============================
-# Traduce puertos a servicios comunes.
 
 def get_service_name(port):
     port_map = {
@@ -153,8 +132,6 @@ def get_service_name(port):
 # ==============================
 # Common port scanning
 # ==============================
-# Escanea algunos puertos comunes.
-# Usa un scanner separado para no sobrescribir discovery.
 
 def scan_common_ports(host):
     common_ports = "21,22,23,53,80,443,445,554,3389,8080"
@@ -188,7 +165,6 @@ def scan_common_ports(host):
 # ==============================
 # OS detection
 # ==============================
-# Intenta detectar el sistema operativo.
 
 def detect_os_guess(host):
     try:
@@ -209,7 +185,6 @@ def detect_os_guess(host):
 # ==============================
 # OS guess simplification
 # ==============================
-# Resume la salida larga de Nmap.
 
 def simplify_os_guess(os_guess):
     guess = os_guess.lower()
@@ -237,7 +212,6 @@ def simplify_os_guess(os_guess):
 # ==============================
 # OS detection decision
 # ==============================
-# Solo corre OS detection cuando vale la pena.
 
 def should_run_os_detection(role, open_ports):
     if role in ["Gateway", "Local Host"]:
@@ -250,13 +224,6 @@ def should_run_os_detection(role, open_ports):
 # ==============================
 # Banner detection helpers
 # ==============================
-# Intenta obtener banners simples de servicios abiertos.
-# Esto ayuda a identificar:
-# - OpenSSH
-# - Apache / nginx
-# - cámaras IP
-# - paneles web
-# - software expuesto
 
 def grab_tcp_banner(host, port, timeout=2):
     try:
@@ -291,13 +258,11 @@ def grab_http_banner(host, port, use_ssl=False, timeout=3):
             data = sock.recv(2048).decode(errors="ignore")
 
             for line in data.splitlines():
-                line_lower = line.lower()
-                if line_lower.startswith("server:"):
+                if line.lower().startswith("server:"):
                     return line.strip()
 
             if data:
-                first_line = data.splitlines()[0].strip()
-                return first_line
+                return data.splitlines()[0].strip()
 
     except Exception:
         pass
@@ -348,13 +313,6 @@ def detect_banners(host, open_ports):
 # ==============================
 # Advanced device fingerprinting
 # ==============================
-# Mejora la clasificación usando:
-# - clasificación básica
-# - puertos
-# - vendor
-# - hostname
-# - os_guess
-# - banners
 
 def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role, banners):
     vendor_lower = vendor.lower() if vendor != "N/A" else ""
@@ -370,14 +328,17 @@ def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role
     if role == "Local Host":
         return "Workstation"
 
+    # IP camera detection
     if "554(RTSP)" in ports:
+        if "80(HTTP)" in ports or "8080(HTTP-Alt)" in ports or "443(HTTPS)" in ports:
+            return "IP Camera / Web Admin"
         return "IP Camera"
 
     if "camera" in hostname_lower or "cam" in hostname_lower:
         return "IP Camera"
 
-    if "goahead" in banners_lower or "rtsp" in banners_lower:
-        return "IP Camera"
+    if "goahead" in banners_lower or "hikvision" in banners_lower or "dahua" in banners_lower:
+        return "IP Camera / Web Admin"
 
     if "printer" in hostname_lower:
         return "Printer"
@@ -416,7 +377,6 @@ def fingerprint_device(device_type, open_ports, vendor, hostname, os_guess, role
 # ==============================
 # Security risk detection
 # ==============================
-# Asigna nivel de riesgo y banderas.
 
 def assess_security_risk(device_type, open_ports, role, banners):
     flags = []
@@ -430,6 +390,10 @@ def assess_security_risk(device_type, open_ports, role, banners):
     if device_type == "IP Camera":
         flags.append("Possible exposed camera device")
         score += 3
+
+    if device_type == "IP Camera / Web Admin":
+        flags.append("Possible exposed camera admin interface")
+        score += 4
 
     if device_type == "Smart / Connected Device":
         flags.append("Smart device needs review")
@@ -471,9 +435,16 @@ def assess_security_risk(device_type, open_ports, role, banners):
         flags.append("Camera or video stream service exposed")
         score += 2
 
-    if "goahead" in banners_lower:
-        flags.append("Possible embedded web interface detected")
-        score += 1
+    if (
+        "554(RTSP)" in open_ports
+        and ("80(HTTP)" in open_ports or "8080(HTTP-Alt)" in open_ports or "443(HTTPS)" in open_ports)
+    ):
+        flags.append("Camera stream and web admin interface both exposed")
+        score += 2
+
+    if "goahead" in banners_lower or "hikvision" in banners_lower or "dahua" in banners_lower:
+        flags.append("Possible embedded camera web interface detected")
+        score += 2
 
     if "apache" in banners_lower or "nginx" in banners_lower or "lighttpd" in banners_lower:
         flags.append("Web server banner detected")
@@ -592,7 +563,6 @@ def detect_service_changes(previous_devices, current_devices):
 # ==============================
 # Terminal output formatting
 # ==============================
-# Imprime tabla alineada.
 
 def print_table(devices):
     headers = [
@@ -651,18 +621,6 @@ def print_table(devices):
 # ==============================
 # Main program
 # ==============================
-# Flujo:
-# 1. detectar red/gateway/IP local
-# 2. discovery de hosts
-# 3. clasificar dispositivos
-# 4. escanear puertos
-# 5. detectar OS selectivamente
-# 6. detectar banners
-# 7. fingerprinting avanzado
-# 8. evaluar riesgo
-# 9. imprimir tabla
-# 10. comparar con scan anterior
-# 11. guardar scan actual
 
 def main():
     parser = argparse.ArgumentParser(description="Network Asset Discovery Tool")
