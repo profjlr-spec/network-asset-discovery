@@ -1,491 +1,210 @@
-# LEARNING NOTES — Network Asset Discovery Tool
+# Network Asset Discovery Tool — Learning Notes
 
-This document explains how the discovery.py script works step by step.
-
-The goal of this file is to make the project easier to understand when reviewing the code later.
-
-This project is a learning exercise focused on:
-
-- Python scripting
-- Linux networking
-- automation
-- network enumeration
-- cybersecurity fundamentals
+This document summarizes the key technical concepts and lessons learned while developing the Network Asset Discovery & Security Monitoring Tool.
 
 --------------------------------------------------
 
-PROJECT OVERVIEW
+PROJECT PURPOSE
 
-The script scans a local network and builds a basic inventory of active devices.
+The goal of this project was to build a practical cybersecurity learning tool capable of discovering devices on a network, analyzing exposed services, and detecting potential security risks.
 
-The tool identifies:
+The project helped reinforce important networking and security concepts through hands-on development.
+
+--------------------------------------------------
+
+NETWORK DISCOVERY
+
+One of the first concepts explored was network discovery.
+
+The tool uses Nmap host discovery to identify active devices on a network.
+
+Key concepts learned:
+
+- IP addressing
+- Network ranges (CIDR notation)
+- Host discovery techniques
+- ARP and ICMP responses
+
+Understanding how devices respond to discovery probes is fundamental for network enumeration.
+
+--------------------------------------------------
+
+PORT SCANNING
+
+The project introduced the concept of port scanning.
+
+Each device may expose services through open ports.
+
+Common ports used in the tool include:
+
+21   FTP  
+22   SSH  
+23   TELNET  
+53   DNS  
+80   HTTP  
+443  HTTPS  
+445  SMB  
+554  RTSP  
+3389 RDP  
+8080 HTTP alternative  
+
+Scanning these ports allows identification of services running on a device.
+
+--------------------------------------------------
+
+DEVICE ENUMERATION
+
+Device enumeration collects detailed information about each host.
+
+Information gathered includes:
 
 - IP address
-- device role
-- device type guess
 - hostname
-- device state
-- open ports
 - MAC address
-- vendor
+- vendor information
+- open ports
 - operating system guess
-- risk level
-- security flags
-- scan timestamp
 
-Results are exported to:
-
-- scan_results.json
-- scan_results.csv
+This creates a basic inventory of network assets.
 
 --------------------------------------------------
 
-SCRIPT ARCHITECTURE
+DEVICE FINGERPRINTING
 
-The script is divided into these logical sections:
+Device fingerprinting attempts to determine what type of device is present on the network.
 
-1. Imports
-2. Network detection
-3. Device role classification
-4. Device type guessing
-5. Port-to-service mapping
-6. Common port scanning
-7. OS detection
-8. OS guess simplification
-9. OS detection decision logic
-10. Security risk detection
-11. Terminal table formatting
-12. Main program flow
+The tool uses indicators such as:
 
---------------------------------------------------
+- open ports
+- vendor information
+- service patterns
+- OS guesses
 
-1 — IMPORTS
+Example device classifications:
 
-The script imports these Python libraries:
+Gateway / Router  
+Workstation  
+IoT Device  
+Smart Device  
+Unknown Device  
 
-import nmap
-import json
-import csv
-import argparse
-import subprocess
-import ipaddress
-from datetime import datetime
-
-Purpose of each module:
-
-nmap
-- Runs Nmap scans from Python
-- Used for host discovery, port scanning, and OS detection
-
-json
-- Exports scan results to JSON
-
-csv
-- Exports scan results to CSV
-
-argparse
-- Allows command-line arguments such as:
-  --network 192.168.1.0/24
-
-subprocess
-- Runs Linux commands such as:
-  ip route
-
-ipaddress
-- Calculates and sorts IP addresses correctly
-
-datetime
-- Adds timestamps to each scan
+This technique is commonly used in network security monitoring.
 
 --------------------------------------------------
 
-2 — NETWORK DETECTION
+SECURITY RISK IDENTIFICATION
 
-Function:
-detect_network_gateway_and_local_ip()
+The project introduced basic risk detection based on exposed services.
 
-This function automatically determines:
-
-- the network range
-- the default gateway
-- the local host IP
-
-It does this by reading Linux network information.
-
-Example idea:
-
-10.0.0.221/24
-
-becomes:
-
-10.0.0.0/24
-
-So the script knows:
-
-- what network to scan
-- what device is the gateway
-- what IP belongs to the local host
-
---------------------------------------------------
-
-3 — DEVICE ROLE CLASSIFICATION
-
-Function:
-determine_role(ip, gateway, local_ip)
-
-This determines the role of each discovered device.
-
-Rules:
-
-- if ip == gateway -> Gateway
-- if ip == local_ip -> Local Host
-- otherwise -> Device
-
-Example:
-
-10.0.0.1   -> Gateway
-10.0.0.221 -> Local Host
-10.0.0.57  -> Device
-
---------------------------------------------------
-
-4 — DEVICE TYPE GUESSING
-
-Function:
-guess_device_type(role, hostname, vendor)
-
-This function tries to guess what type of device each host may be.
-
-It uses:
-
-- role
-- hostname
-- vendor
-
-Examples of guesses:
-
-- Gateway / Router
-- Local Computer
-- IoT Device
-- Computer / Laptop
-- Printer
-- Smart TV
-- Camera
-- Unknown Device
-- Smart / Connected Device
-
-Examples of logic:
-
-- Nest in vendor -> IoT Device
-- Intel in vendor -> Computer / Laptop
-- Arris in vendor -> Network Device
-- printer in hostname -> Printer
-- tv in hostname -> Smart TV
-
-If nothing useful is found, the function falls back to:
-
-Unknown Device
-
-This is only a guess, not a guaranteed identification.
-
---------------------------------------------------
-
-5 — PORT TO SERVICE MAPPING
-
-Function:
-get_service_name(port)
-
-This translates common ports into their usual service names.
-
-Mappings used in this project:
-
-22   -> SSH
-53   -> DNS
-80   -> HTTP
-443  -> HTTPS
-445  -> SMB
-3389 -> RDP
-554  -> RTSP
-
-Example output:
-
-80(HTTP), 443(HTTPS)
-
-This makes the results easier to understand than just showing raw numbers.
-
---------------------------------------------------
-
-6 — COMMON PORT SCANNING
-
-Function:
-scan_common_ports(host)
-
-This function scans a small set of common ports instead of scanning every possible port.
-
-Ports scanned:
-
-22,53,80,443,445,3389,554
-
-Nmap arguments used:
-
--Pn -p PORTLIST --open
-
-Meaning:
-
-- -Pn -> treat the host as up
-- -p -> scan specific ports only
-- --open -> only show open ports
-
-Example result:
-
-443(HTTPS)
-
-If none of the selected ports are open, the script returns:
-
-None
-
-This keeps the project faster and more practical for learning.
-
---------------------------------------------------
-
-7 — OS DETECTION
-
-Function:
-detect_os_guess(host)
-
-This function runs Nmap OS fingerprinting.
-
-Arguments used:
-
--Pn -O --osscan-guess
-
-Meaning:
-
-- -Pn -> treat the host as active
-- -O -> attempt OS detection
-- --osscan-guess -> allow Nmap to make a best guess
-
-OS detection is useful, but slower than host discovery or common port scanning.
-
---------------------------------------------------
-
-8 — OS GUESS SIMPLIFICATION
-
-Function:
-simplify_os_guess(os_guess)
-
-Nmap often returns long operating system descriptions.
-
-This function simplifies them into shorter categories such as:
-
-- Linux
-- Windows
-- macOS / iOS
-- Embedded Linux
-- Router / Network OS
-- Printer
-- BSD / Unix-like
-- Unknown
-- Other / Unknown
+Some services are considered higher risk due to weak security or legacy protocols.
 
 Examples:
 
-Linux 3.2 - 4.9            -> Linux
-Apple macOS 10.13 - 10.15  -> macOS / iOS
-Microsoft Windows 10       -> Windows
+TELNET (23)  
+FTP (21)  
+SMB (445)  
+RDP (3389)
 
-This makes the terminal table easier to read.
-
---------------------------------------------------
-
-9 — SELECTIVE OS DETECTION
-
-Function:
-should_run_os_detection(role, open_ports)
-
-OS detection is the slowest part of the tool.
-
-To improve performance, the script only runs OS detection when it makes sense.
-
-The rule is:
-
-- run OS detection for the Gateway
-- run OS detection for the Local Host
-- run OS detection for any host with open ports
-
-Otherwise the script sets:
-
-Skipped
-
-This keeps the scan useful while avoiding unnecessary delays.
+When these services are detected, the tool increases the risk level and adds security warnings.
 
 --------------------------------------------------
 
-10 — SECURITY RISK DETECTION
+NETWORK CHANGE DETECTION
 
-Function:
-assess_security_risk(device_type, open_ports, role)
+The tool compares results between scans to detect changes.
 
-This function assigns a simple security risk score and a set of security flags.
+This includes:
 
-It looks at:
-
-- device type
-- open ports
-- device role
-
-Risk logic by device type:
-
-If device type is:
-
-- IoT Device -> flag as possible insecure IoT device
-- Smart / Connected Device -> flag for review
-- Unknown Device -> flag as unknown device detected
-
-Risk logic by ports:
-
-If open ports include:
-
-- 445(SMB)   -> SMB exposed
-- 3389(RDP)  -> RDP exposed
-- 22(SSH) on non-local device -> SSH open on network device
-- 554(RTSP)  -> Camera or stream service exposed
-
-If a normal device has any open ports, it can also be flagged with:
-
-Open ports require review
-
-Final risk levels:
-
-- Low
-- Medium
-- High
-
-If nothing concerning is found, the result is:
-
-No obvious issues
-
---------------------------------------------------
-
-11 — TABLE FORMATTING
-
-Function:
-print_table(devices)
-
-This function prints a clean aligned table in the terminal.
-
-Columns include:
-
-- IP
-- ROLE
-- DEVICE_TYPE
-- OS_GUESS
-- STATE
-- OPEN_PORTS
-- RISK_LEVEL
-- SECURITY_FLAGS
+New devices appearing on the network
 
 Example:
 
-IP          ROLE        DEVICE_TYPE      OS_GUESS  STATE  OPEN_PORTS                     RISK_LEVEL  SECURITY_FLAGS
-10.0.0.1    Gateway     Router           Linux     up     53(DNS),80(HTTP),443(HTTPS)   Low         No obvious issues
-10.0.0.175  Device      Unknown Device   Linux     up     443(HTTPS)                     Medium      Unknown device detected; Open ports require review
+NEW DEVICES DETECTED:
++ 10.0.0.215
 
-The function dynamically calculates column widths so the table stays aligned even when values vary.
+Devices disappearing from the network
 
---------------------------------------------------
+Example:
 
-12 — MAIN PROGRAM FLOW
+DEVICES NO LONGER PRESENT:
+- 10.0.0.103
 
-Function:
-main()
-
-This is the main workflow of the script.
-
-Steps performed:
-
-1. Read command-line arguments
-2. Detect network, gateway, and local IP
-3. Run Nmap host discovery
-4. Loop through discovered hosts
-5. Determine device role
-6. Guess device type
-7. Scan common ports
-8. Decide whether OS detection should run
-9. If needed, detect and simplify the OS guess
-10. Assess basic security risk
-11. Build a device dictionary
-12. Sort results by IP address
-13. Print the table
-14. Export JSON and CSV
+This concept is important for network monitoring and intrusion detection.
 
 --------------------------------------------------
 
-EXAMPLE SCAN PROCESS
+SERVICE CHANGE DETECTION
 
-Typical scan flow:
+The tool also monitors changes in open ports.
 
-Network Detection
-        ↓
-Host Discovery (-sn)
-        ↓
-Device Role Classification
-        ↓
-Device Type Guessing
-        ↓
-Common Port Scanning
-        ↓
-Selective OS Detection
-        ↓
-Basic Risk Assessment
-        ↓
-Table Output
-        ↓
-JSON / CSV Export
+Example:
+
+SERVICE CHANGE DETECTED: 10.0.0.221
+
+New open ports:
++ 23(TELNET)
+
+Closed ports:
+- 22(SSH)
+
+Monitoring service changes helps identify configuration changes or suspicious activity.
 
 --------------------------------------------------
 
-WHAT I LEARNED
+WORKING WITH NMAP IN PYTHON
 
-This project helped practice:
+The project used the python-nmap library to integrate Nmap scanning into Python scripts.
 
-- using Nmap with Python
-- automating network discovery
-- parsing scan results
-- structuring Python code into clear functions
-- exporting structured data
-- simplifying technical output for readability
-- improving performance by avoiding unnecessary OS scans
-- adding basic risk logic to network inventory data
+This allowed automated scanning and parsing of scan results.
+
+Key lesson:
+
+Automation of security tools using Python is extremely powerful.
 
 --------------------------------------------------
 
-WHY THIS PROJECT MATTERS
+WORKING WITH SOCKETS
 
-This project is useful because it combines multiple real technical skills:
+Basic socket communication was used for service interaction and banner detection.
 
-- Linux command usage
-- Python scripting
-- Nmap automation
-- host discovery
-- service identification
-- asset inventory creation
-- practical cybersecurity-style enumeration
-- basic security triage
+Concepts explored:
 
-It is also a strong base for future improvements.
+- TCP connections
+- service responses
+- banner grabbing techniques
+
+These techniques are commonly used in penetration testing and service analysis.
 
 --------------------------------------------------
 
-FUTURE IMPROVEMENTS
+DATA EXPORT AND REPORTING
 
-Possible future improvements include:
+Scan results are saved in two formats:
 
-- deeper service detection
-- better device fingerprinting
-- vulnerability scanning
-- network topology visualization
-- HTML reports
-- historical scan comparison
-- automated asset inventory systems
-- alerting for new or suspicious devices
+JSON  
+CSV  
+
+These formats allow easy integration with other tools or further analysis.
+
+--------------------------------------------------
+
+CYBERSECURITY SKILLS DEVELOPED
+
+This project helped develop practical skills in:
+
+Network enumeration  
+Security monitoring  
+Python scripting for security tools  
+Understanding exposed services  
+Analyzing network devices  
+
+--------------------------------------------------
+
+PERSONAL TAKEAWAY
+
+Building this tool demonstrated how important network visibility is in cybersecurity.
+
+Without knowing what devices exist on a network, it is difficult to properly secure it.
+
+Hands-on projects like this help bridge the gap between theory and real-world security practices.
+
