@@ -1,11 +1,47 @@
+# =========================
 # Python
+# =========================
+
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 
-# Virtual environment
+# =========================
+# Virtual Environments
+# =========================
+
 venv/
+.env/
+.envrc
 
-# Scan data (generated files)
+# =========================
+# Build / Packaging
+# =========================
+
+build/
+dist/
+*.egg-info/
+
+# =========================
+# IDE / Editors
+# =========================
+
+.vscode/
+.idea/
+
+# =========================
+# OS Files
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+# Scan Data (Generated)
+# =========================
+
 data/scan_results.json
 data/scan_results.csv
 data/previous_scan.json
