@@ -1,271 +1,149 @@
-# Network Asset Discovery Tool — Interview Notes
+# Interview Notes – Network Asset Discovery Tool
 
-This document contains technical explanations and interview talking points based on the development of the **Network Asset Discovery & Security Monitoring Tool** built in Python.
+This document summarizes how to explain this project in technical interviews.
 
-The goal of this project was to simulate capabilities commonly found in security tools used by SOC teams, vulnerability scanners, and asset management systems.
+---
 
---------------------------------------------------
+# Project Summary
 
-PROJECT SUMMARY
+This project is a Python-based Network Asset Discovery and Security Monitoring tool.
 
-This project is a Python-based network security tool designed to discover and monitor devices on a network.
+The tool scans a local network, identifies connected devices, detects exposed services, and highlights potential security risks.
 
-The tool performs:
+It also compares current scan results with previous scans to detect network changes.
 
-- Network asset discovery
-- Service detection
-- Device fingerprinting
-- Banner detection
-- Security risk identification
-- Network change detection
-- Service change detection
-- Export of results to JSON and CSV
+---
 
-The tool helps identify potentially insecure devices such as IoT devices, exposed services, or unknown devices connected to a network.
+# Problem the Tool Solves
 
---------------------------------------------------
+Many small networks do not have visibility into:
 
-TECHNOLOGIES USED
+- what devices are connected
+- what services are exposed
+- whether insecure protocols are present
+- when new devices appear on the network
 
-The project uses several technologies and networking concepts:
+This tool provides a lightweight way to monitor network assets and detect potential risks.
 
-- Python
-- Linux networking tools
-- Nmap scanning engine
-- TCP socket communication
-- JSON and CSV data storage
+---
 
-Python libraries used:
+# Key Features
 
-- python-nmap
-- socket
-- ssl
-- subprocess
-- argparse
-- ipaddress
-- datetime
+The tool includes the following capabilities:
 
---------------------------------------------------
+Network host discovery
 
-PROBLEM THIS TOOL SOLVES
+Device classification (gateway, workstation, IoT devices)
 
-In many networks administrators do not have full visibility of what devices are connected.
+Port scanning of common services
 
-Unknown devices, insecure IoT devices, and exposed services can introduce security risks.
+Service banner detection
 
-This tool automatically:
+Device fingerprinting
 
-- discovers devices on the network
-- identifies services running on those devices
-- classifies device types
-- flags potential security risks
+Security risk identification
 
---------------------------------------------------
+Network change detection
 
-HOW NETWORK DISCOVERY WORKS
+JSON and CSV report generation
 
-The tool uses **Nmap host discovery (-sn)** to detect active hosts on the network.
+---
 
-Host discovery identifies devices that respond to network probes such as:
+# Security Detection
 
-- ARP requests
-- ICMP responses
-- other network probes
+The scanner identifies potentially insecure services such as:
 
-Once hosts are discovered, additional scans are performed to determine:
+FTP (21)
 
-- open ports
-- device characteristics
-- potential services
+TELNET (23)
 
---------------------------------------------------
-
-SERVICE DETECTION
-
-After discovering hosts, the tool performs a port scan against common ports:
-
-21   FTP  
-22   SSH  
-23   TELNET  
-53   DNS  
-80   HTTP  
-443  HTTPS  
-445  SMB  
-554  RTSP  
-3389 RDP  
-8080 HTTP alternative  
-
-If a port is open, the tool associates it with its likely service.
-
-Example mapping:
-
-22 -> SSH  
-80 -> HTTP  
-554 -> RTSP (commonly used by IP cameras)
-
---------------------------------------------------
-
-BANNER DETECTION
-
-The tool attempts to retrieve **service banners** from open ports.
-
-A banner is a response from a service that may reveal:
-
-- server software
-- service type
-- device information
-- version data
-
-Examples of banners:
-
-SSH-2.0-OpenSSH_9.6  
-Server: nginx  
-Server: Apache  
-Server: lighttpd  
-
-Banner detection improves device identification and security analysis.
-
---------------------------------------------------
-
-DEVICE FINGERPRINTING
-
-The tool performs device fingerprinting using:
-
-- open ports
-- MAC vendor information
-- hostname patterns
-- service banners
-- OS guess from Nmap
-
-Possible classifications include:
-
-- IP Camera
-- Printer
-- NAS / File Server
-- Web Server / Admin Interface
-- Workstation
-- IoT Device
-- Unknown Device
-
---------------------------------------------------
-
-SECURITY RISK DETECTION
-
-The tool evaluates potential risks based on exposed services.
-
-Examples of insecure or sensitive services:
-
-TELNET (23)  
-FTP (21)  
-RDP (3389)  
 SMB (445)
 
-Example risk message:
+RDP (3389)
 
-Telnet is insecure and should not be exposed
-
-Devices are categorized into risk levels:
-
-Low  
-Medium  
-High
-
---------------------------------------------------
-
-NETWORK CHANGE DETECTION
-
-The tool stores results from the previous scan.
-
-On future scans it detects:
-
-- newly connected devices
-- devices that disappeared from the network
-
-Example output:
-
-NEW DEVICES DETECTED:
-+ 10.0.0.215
-
---------------------------------------------------
-
-SERVICE CHANGE DETECTION
-
-The tool also detects changes in exposed services.
+If detected, the tool marks the device with a higher risk level and generates a security flag.
 
 Example:
 
-SERVICE CHANGE DETECTED: 10.0.0.221
-Closed ports:
-- 23(TELNET)
+RISK_LEVEL: High  
+SECURITY_FLAGS: Telnet is insecure and should not be exposed
 
-This capability can help identify:
+---
 
-- newly exposed services
-- misconfigurations
-- potential security incidents
+# Network Change Detection
 
---------------------------------------------------
+One of the main features is the ability to detect network changes.
 
-SECURITY USE CASES
+The tool compares the current scan with the previous scan and identifies:
 
-This tool could be used for:
+New devices joining the network
 
-- home network security monitoring
-- small business network visibility
-- cybersecurity lab experimentation
-- learning network enumeration techniques
+Devices that disappeared
 
-The tool simulates capabilities seen in tools such as:
+Newly opened ports
 
-- Nmap
-- Nessus
-- Lansweeper
-- Armis
+Closed ports
 
---------------------------------------------------
+Example output:
 
-KEY SECURITY CONCEPTS DEMONSTRATED
+NEW DEVICES DETECTED
 
-The project demonstrates several important cybersecurity concepts:
+DEVICES NO LONGER PRESENT
 
-- Network Enumeration
-- Asset Discovery
-- Service Exposure Detection
-- Device Fingerprinting
-- Security Risk Identification
-- Network Monitoring
+SERVICE CHANGE DETECTED
 
---------------------------------------------------
+---
 
-LESSONS LEARNED
+# Technologies Used
 
-Building this project provided practical experience in:
+Python 3
 
-- Python networking
-- TCP socket communication
-- interacting with Nmap through Python
-- analyzing exposed services
-- designing modular security tools
+Network scanning techniques
 
-It also reinforced the importance of **network visibility** as a fundamental cybersecurity capability.
+Socket connections for banner grabbing
 
---------------------------------------------------
+JSON and CSV data processing
 
-FUTURE IMPROVEMENTS
+Basic security analysis logic
 
-Possible future improvements include:
+---
 
-- real-time monitoring
-- vulnerability database integration
-- web dashboard visualization
-- automated alerts for network changes
-- machine learning device classification
+# What I Learned
 
---------------------------------------------------
+Through this project I learned how to:
 
-INTERVIEW TALKING POINT
+Perform network discovery and scanning
 
-Example response when asked about a personal project:
+Identify open services on network devices
 
-"I built a Python-based network asset discovery and security monitoring tool that uses Nmap for host discovery and port scanning. The tool identifies devices on a network, performs device fingerprinting, retrieves service banners, and flags potential security risks such as exposed services or insecure IoT devices. It also tracks network and service changes between scans to help detect newly connected devices or newly exposed ports."
+Extract service banners
 
+Implement simple device fingerprinting
+
+Detect network changes between scans
+
+Generate structured security reports
+
+Organize a technical project for documentation and reproducibility
+
+---
+
+# How I Would Improve the Tool
+
+Future improvements could include:
+
+Continuous network monitoring mode
+
+Alerting when high-risk services appear
+
+MAC address vendor identification
+
+Integration with SIEM tools
+
+Web dashboard for visualization
+
+---
+
+# One Sentence Explanation
+
+"I built a Python-based network asset discovery tool that scans a network, identifies devices and services, detects insecure protocols, and tracks changes in the network over time."
