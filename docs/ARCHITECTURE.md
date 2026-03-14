@@ -1,274 +1,202 @@
-# Network Asset Discovery Tool — Architecture
+# Network Asset Discovery Tool – Architecture
 
-This document explains the architecture and internal workflow of the Network Asset Discovery & Security Monitoring Tool.
+This document describes the architecture and workflow of the Network Asset Discovery Tool.
 
-The tool is written in Python and designed to discover, analyze, and monitor devices connected to a network.
+The tool is designed to automatically discover devices on a network, identify services, and highlight potential security risks.
 
---------------------------------------------------
+---
 
-HIGH LEVEL ARCHITECTURE
+# High Level Workflow
 
-The program performs the following main phases:
+The scanning pipeline works in the following order:
 
-1. Network discovery
-2. Device enumeration
-3. Service detection
-4. Banner detection
-5. Device fingerprinting
-6. Security risk analysis
-7. Change detection
-8. Result export
+Network  
+↓  
+Host Discovery (ARP / Network Scan)  
+↓  
+Device Identification  
+↓  
+Port Scanning  
+↓  
+Service Detection  
+↓  
+Banner Detection  
+↓  
+Device Fingerprinting  
+↓  
+Risk Analysis  
+↓  
+Change Detection  
+↓  
+Report Generation (JSON / CSV)
 
-Each phase builds on the previous one.
+---
 
---------------------------------------------------
+# Architecture Components
 
-WORKFLOW OVERVIEW
+## Network Discovery
 
-The execution flow of the tool is:
+Responsible for identifying active devices on the network.
 
-START
+The tool scans the local subnet (example: 10.0.0.0/24) and identifies responding hosts.
 
-↓ Detect local IP and network range
+Outputs:
+- Active IP addresses
+- Gateway identification
+- Local host detection
 
-↓ Identify gateway
+---
 
-↓ Perform network scan using Nmap
+## Device Identification
 
-↓ Enumerate discovered devices
+Once hosts are discovered, the tool attempts to classify devices.
 
-↓ Detect open ports on each host
+Possible classifications:
 
-↓ Attempt banner grabbing
-
-↓ Perform device fingerprinting
-
-↓ Evaluate security risks
-
-↓ Compare results with previous scan
-
-↓ Detect network or service changes
-
-↓ Export results
-
-END
-
---------------------------------------------------
-
-NETWORK DISCOVERY MODULE
-
-The tool begins by identifying the local network.
-
-Steps:
-
-1. Detect local host IP address
-2. Identify the network gateway
-3. Determine network range (example: 10.0.0.0/24)
-
-The tool then performs host discovery using:
-
-Nmap host discovery (-sn)
-
-This identifies active devices on the network.
-
---------------------------------------------------
-
-DEVICE ENUMERATION
-
-For each discovered host the tool collects:
-
-- IP address
-- hostname
-- MAC address
-- vendor (if available)
-- device state
-
-This provides the base inventory of the network.
-
---------------------------------------------------
-
-PORT SCANNING
-
-The tool scans a set of common ports including:
-
-21   FTP
-22   SSH
-23   TELNET
-53   DNS
-80   HTTP
-443  HTTPS
-445  SMB
-554  RTSP
-3389 RDP
-8080 HTTP alternative
-
-These ports were selected because they commonly reveal useful information about devices.
-
---------------------------------------------------
-
-BANNER DETECTION
-
-For services running on open ports, the tool attempts to retrieve banners.
-
-Banner grabbing uses Python socket connections to read responses from services.
-
-Examples of possible banners:
-
-SSH-2.0-OpenSSH_9.6
-Server: nginx
-Server: Apache
-Server: lighttpd
-
-Banners help identify:
-
-- service type
-- software versions
-- device categories
-
---------------------------------------------------
-
-DEVICE FINGERPRINTING
-
-Device fingerprinting uses multiple indicators:
-
-- open ports
-- MAC vendor
-- hostname
-- service banners
-- operating system guesses
-
-Examples of device classifications:
-
-IP Camera
-Printer
-NAS
-Workstation
-IoT Device
-Web Server
+Gateway / Router  
+Local Host  
+Computer / Laptop  
+Smart Device  
+IoT Device  
 Unknown Device
 
---------------------------------------------------
+This classification is based on:
 
-SECURITY ANALYSIS ENGINE
+- network role
+- observed behavior
+- service exposure
+- known patterns
 
-The tool evaluates potential risks based on detected services.
+---
 
-Risk examples:
+## Port Scanning
 
-FTP (21) → insecure file transfer
-TELNET (23) → unencrypted remote access
-SMB (445) → possible lateral movement risk
-RDP (3389) → remote desktop exposure
+The scanner checks common service ports on each discovered device.
 
-Each device receives:
+Example ports scanned:
 
-Risk level:
-Low
-Medium
-High
+22   SSH  
+23   TELNET  
+53   DNS  
+80   HTTP  
+443  HTTPS  
+445  SMB  
+3389 RDP  
 
-Security flags explaining potential issues.
+Detected open ports are recorded and later analyzed for risk.
 
---------------------------------------------------
+---
 
-NETWORK CHANGE DETECTION
+## Banner Detection
 
-The tool compares current scan results with the previous scan.
+For supported services, the scanner attempts to retrieve service banners.
+
+Example:
+
+Server: Xfinity Broadband Router Server
+
+This helps identify:
+
+- device vendors
+- service software
+- router firmware
+- exposed web servers
+
+---
+
+## Device Fingerprinting
+
+Using information gathered from:
+
+- open ports
+- service banners
+- behavior patterns
+
+The tool attempts to infer the type of device.
+
+Example fingerprints:
+
+Workstation  
+Gateway / Router  
+IoT Device  
+Smart Device  
+Unknown Device
+
+---
+
+## Risk Analysis
+
+The scanner evaluates each device and flags potential security risks.
+
+Examples of high-risk services:
+
+TELNET (23)  
+FTP (21)  
+SMB (445)  
+RDP (3389)
+
+Example output:
+
+RISK_LEVEL: High  
+SECURITY_FLAGS: Telnet is insecure and should not be exposed
+
+---
+
+## Change Detection
+
+The scanner compares the current scan with the previous scan.
 
 This allows detection of:
 
-New devices
+New devices joining the network
 
-Example:
+Devices disappearing from the network
 
-NEW DEVICES DETECTED:
-+ 10.0.0.215
+Service level changes such as newly opened ports
 
-Missing devices
+Example detection:
 
-Example:
+NEW DEVICES DETECTED
 
-DEVICES NO LONGER PRESENT:
-- 10.0.0.103
+SERVICE CHANGE DETECTED
 
---------------------------------------------------
+DEVICES NO LONGER PRESENT
 
-SERVICE CHANGE DETECTION
+---
 
-The tool also detects changes in open ports.
+## Report Generation
 
-Example:
+Results are exported for analysis and automation.
 
-SERVICE CHANGE DETECTED: 10.0.0.221
+Outputs include:
 
-New ports:
-+ 23(TELNET)
+data/scan_results.json  
+data/scan_results.csv
 
-Closed ports:
-- 22(SSH)
+These files allow:
 
-This helps identify configuration changes or suspicious activity.
+security review  
+asset inventory tracking  
+network monitoring automation
 
---------------------------------------------------
+---
 
-DATA STORAGE
+# Summary
 
-Results are saved into two formats:
+This tool provides a lightweight network discovery and security analysis capability.
 
-JSON  
-CSV
+Key capabilities include:
 
-Files generated:
+Network asset discovery
 
-scan_results.json
-scan_results.csv
+Port and service detection
 
-These files allow further analysis or integration with other tools.
+Banner grabbing
 
---------------------------------------------------
+Device fingerprinting
 
-PROGRAM STRUCTURE
+Security risk identification
 
-The main components of the script include functions for:
+Network change detection
 
-Network detection  
-Host discovery  
-Port scanning  
-Banner detection  
-Device fingerprinting  
-Risk analysis  
-Change detection  
-Result export
-
-The program is executed through the main() function.
-
---------------------------------------------------
-
-SECURITY LAB PURPOSE
-
-This project was designed for:
-
-- cybersecurity learning
-- network enumeration practice
-- Python security tool development
-- understanding asset visibility challenges
-
-It simulates simplified capabilities of professional tools such as:
-
-Nmap
-Nessus
-Armis
-Lansweeper
-
---------------------------------------------------
-
-FUTURE ARCHITECTURE IMPROVEMENTS
-
-Future enhancements could include:
-
-Real-time monitoring
-Alerting system
-Web dashboard
-Integration with vulnerability databases
-Machine learning device classification
-
+Structured reporting
