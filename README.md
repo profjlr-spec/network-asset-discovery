@@ -1,328 +1,276 @@
-# Network Asset Discovery & Security Monitoring Tool
+# Network Asset Monitor
 
-A Python-based network discovery and security monitoring tool designed to identify devices on a network, analyze exposed services, detect security risks, and monitor network changes over time.
+A Python-based network discovery and security monitoring tool designed to identify devices on a network and detect changes over time.
 
-This project simulates capabilities commonly found in cybersecurity tools used by SOC teams, network administrators, and security analysts.
+This project simulates capabilities commonly found in cybersecurity tools used by SOC teams, network administrators, and security analysts to maintain visibility over network assets.
 
---------------------------------------------------
+---
 
-SCREENSHOT
+## Screenshot
 
 Example terminal output:
 
 ![Example Scan](screenshots/example_scan.png)
 
---------------------------------------------------
+---
 
-PROJECT OVERVIEW
+## Project Overview
 
-The tool scans a network to discover connected devices and analyze their characteristics.
+Network Asset Monitor scans a network to discover connected devices and analyze their characteristics.
+
+The tool builds a basic network asset inventory and detects security-relevant changes between scans.
 
 It helps identify:
 
-• Unknown devices connected to the network  
-• IoT and smart devices  
-• Exposed services  
-• Insecure legacy protocols  
-• Device type using fingerprinting  
-• Service banners for better identification  
-• Network and service changes between scans  
+• Unknown devices connected to the network
+• IoT and smart devices
+• Exposed services
+• Insecure legacy protocols
+• Device type using fingerprinting
+• Service banners for better identification
+• Network changes over time
 
---------------------------------------------------
+---
 
-KEY FEATURES
+## Key Features
 
-Network Asset Discovery
+### Network Asset Discovery
 
 Detects active devices on the network using Nmap host discovery.
 
-Device Enumeration
+### Device Enumeration
 
 Collects information about discovered hosts including:
 
-• IP address  
-• Hostname  
-• MAC address  
-• Vendor information  
-• Device state  
+• IP address
+• MAC address (when available)
+• Open ports
+• Service names
+• Service banners
+• Device role classification
+• Device type fingerprinting
 
---------------------------------------------------
+### Security Monitoring
 
-PORT SCANNING
+Identifies potential security risks such as:
 
-The tool scans commonly used ports including:
+• FTP services running without encryption
+• TELNET services exposed on the network
+• IP cameras or IoT devices with potential security risks
+• Services exposed on unusual ports
 
-21   FTP  
-22   SSH  
-23   TELNET  
-53   DNS  
-80   HTTP  
-443  HTTPS  
-445  SMB  
-554  RTSP  
-3389 RDP  
-8080 HTTP alternative  
+### Change Detection
 
-These ports help identify services running on devices.
+Detects network changes between scans including:
 
---------------------------------------------------
+• New devices appearing on the network
+• Devices disappearing from the network
+• Changes in open ports
+• Changes in service banners
+• Changes in calculated risk levels
 
-DEVICE FINGERPRINTING
+### Monitoring Mode
 
-The tool performs device fingerprinting using:
+Supports continuous monitoring of the network.
 
-• Open ports  
-• MAC vendor information  
-• Hostnames  
-• Service banners  
-• OS detection  
+When monitoring mode is enabled the tool:
 
-Possible device classifications include:
+• Runs scans periodically
+• Compares results against a baseline
+• Logs detected changes
+• Generates structured monitoring events
 
-Gateway / Router  
-Workstation  
-Computer / Laptop  
-Printer  
-NAS / File Server  
-IP Camera  
-IoT Device  
-Smart Device  
-Web Server / Admin Interface  
-Unknown Device  
+---
 
---------------------------------------------------
+## Example Output
 
-BANNER DETECTION
+```
+Scanning network: 10.0.0.0/24
+Scan time: 2026-03-14T18:37:03
 
-The tool attempts to retrieve service banners from open ports.
+Devices discovered:
 
-Banner grabbing helps identify:
+IP            DEVICE_TYPE     STATE   OPEN_PORTS    RISK_LEVEL
+--------------------------------------------------------------
+10.0.0.1      Router          up      53,80,443     Medium
+10.0.0.220    Device          up      None          Low
+10.0.0.221    Workstation     up      22            Low
+```
 
-• Server software  
-• Service type  
-• Device manufacturer  
-• Embedded device interfaces  
+---
 
-Example banners:
+## Project Structure
 
-Server: Xfinity Broadband Router Server  
-Server: nginx  
-Server: Apache  
-SSH-2.0-OpenSSH  
-
-This improves device identification and security analysis.
-
---------------------------------------------------
-
-SECURITY RISK DETECTION
-
-The tool evaluates potential security risks based on detected services and device types.
-
-Examples of risky services:
-
-TELNET (23)  
-FTP (21)  
-SMB (445)  
-RDP (3389)
-
-Example output:
-
-RISK_LEVEL: High  
-SECURITY_FLAGS: Telnet is insecure and should not be exposed
-
-Devices are categorized into:
-
-Low  
-Medium  
-High risk
-
---------------------------------------------------
-
-IOT AND CAMERA DETECTION
-
-The tool detects possible IoT and camera devices using port combinations and service patterns.
-
-Examples:
-
-RTSP (554) → camera stream  
-HTTP / HTTPS admin interfaces  
-Embedded web servers  
-
-Example detection:
-
-DEVICE_TYPE: IP Camera  
-SECURITY_FLAGS: Possible exposed camera admin interface
-
---------------------------------------------------
-
-NETWORK CHANGE DETECTION
-
-The tool compares the current scan with the previous scan to detect changes.
-
-Example:
-
-NEW DEVICES DETECTED:
-+ 10.0.0.215
-
-DEVICES NO LONGER PRESENT:
-- 10.0.0.103
-
-This helps identify new devices appearing on the network.
-
---------------------------------------------------
-
-SERVICE CHANGE DETECTION
-
-The tool also detects changes in exposed services.
-
-Example:
-
-SERVICE CHANGE DETECTED: 10.0.0.221
-
-New open ports:
-+ 23(TELNET)
-
-Closed ports:
-- 22(SSH)
-
-This helps detect configuration changes or suspicious activity.
-
---------------------------------------------------
-
-PROJECT STRUCTURE
-
-network-asset-discovery/
+```
+network-asset-monitor
 │
 ├── discovery.py
 ├── requirements.txt
 ├── README.md
-├── .gitignore
 │
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── INTERVIEW_NOTES.md
-│   └── LEARNING_NOTES.md
+├── docs
+│   └── ARCHITECTURE.md
 │
-├── screenshots/
+├── screenshots
 │   └── example_scan.png
 │
-└── data/
-    ├── scan_results.json
-    ├── scan_results.csv
-    └── previous_scan.json
+├── snapshots
+│   ├── scan_results.json
+│   └── scan_results.csv
+│
+├── baseline.json
+├── pending_changes.json
+├── events.jsonl
+└── monitor.log
+```
 
---------------------------------------------------
+---
 
-OUTPUT FILES
+## Installation
 
-Scan results are exported to:
+Clone the repository:
 
-data/scan_results.json  
-data/scan_results.csv  
-
-Previous state is stored in:
-
-data/previous_scan.json  
-
-These files allow further analysis or integration with other tools.
-
---------------------------------------------------
-
-TECHNOLOGIES USED
-
-Python  
-Linux  
-Nmap  
-TCP sockets  
-JSON / CSV processing  
-
-Python Libraries
-
-python-nmap  
-socket  
-ssl  
-ipaddress  
-datetime  
-
---------------------------------------------------
-
-DOCUMENTATION
-
-Additional project documentation is available in:
-
-docs/ARCHITECTURE.md  
-docs/INTERVIEW_NOTES.md  
-docs/LEARNING_NOTES.md  
-
---------------------------------------------------
-
-SECURITY USE CASES
-
-Home network monitoring  
-Small business asset visibility  
-Cybersecurity lab experiments  
-Learning network enumeration techniques  
-
-The project demonstrates concepts used by tools such as:
-
-Nmap  
-Nessus  
-Lansweeper  
-Armis  
-
---------------------------------------------------
-
-EXAMPLE OUTPUT
-
-IP          ROLE        DEVICE_TYPE               OS_GUESS  STATE  OPEN_PORTS                     RISK_LEVEL
-10.0.0.1    Gateway     Gateway / Router          Linux     up     53(DNS),80(HTTP),443(HTTPS)   Low
-10.0.0.221  Local Host  Workstation               Linux     up     None                           Low
-
---------------------------------------------------
-
-SETUP
+```
+git clone https://github.com/profjlr-spec/network-asset-monitor.git
+cd network-asset-monitor
+```
 
 Create a virtual environment:
 
+```
 python3 -m venv venv
-
-Activate it:
-
 source venv/bin/activate
+```
 
 Install dependencies:
 
+```
 pip install -r requirements.txt
+```
 
-Install Nmap if needed:
+Install Nmap if not already installed.
 
+Ubuntu / Debian:
+
+```
 sudo apt install nmap
+```
 
---------------------------------------------------
+---
 
-RUN
+## Usage
 
-Run the tool with sudo so Nmap and socket-based checks work correctly:
+Run a single network scan:
 
-sudo ./venv/bin/python discovery.py
+```
+python3 discovery.py --network 10.0.0.0/24
+```
 
---------------------------------------------------
+Run continuous monitoring mode:
 
-FUTURE IMPROVEMENTS
+```
+python3 discovery.py --network 10.0.0.0/24 --monitor --interval 60
+```
 
-Possible enhancements include:
+This will:
 
-• Real-time monitoring  
-• Security alerting system  
-• Web dashboard  
-• Vulnerability database integration  
-• Advanced IoT detection  
+• Perform periodic network scans
+• Compare results with the baseline
+• Detect changes
+• Log events
 
---------------------------------------------------
+---
 
-AUTHOR
+## Monitoring Files
 
-Juan Ramos
+The tool generates several monitoring artifacts.
 
-Cybersecurity and network security learning project.
+### baseline.json
 
+Stores the baseline network state used for comparison.
+
+### pending_changes.json
+
+Tracks devices that require confirmation across multiple scans.
+
+### events.jsonl
+
+Stores structured monitoring events such as:
+
+• new_device
+• device_disappeared
+• open_ports_changed
+• banner_changed
+• risk_changed
+
+### monitor.log
+
+Human-readable monitoring log.
+
+---
+
+## Architecture
+
+The project follows a simple monitoring pipeline:
+
+```
+Network Scan (Nmap)
+        ↓
+Device Enumeration
+        ↓
+Fingerprinting
+        ↓
+Risk Analysis
+        ↓
+Baseline Comparison
+        ↓
+Event Generation
+        ↓
+Monitoring Logs
+```
+
+Detailed architecture documentation is available in:
+
+```
+docs/ARCHITECTURE.md
+```
+
+---
+
+## Technologies Used
+
+• Python
+• Nmap
+• JSON / CSV data export
+• Git & GitHub
+
+---
+
+## Learning Objectives
+
+This project was built to better understand:
+
+• Network discovery techniques
+• Service enumeration
+• Device fingerprinting
+• Security risk detection
+• Change monitoring across network scans
+• Basic network asset inventory concepts
+
+---
+
+## Future Improvements
+
+Planned improvements include:
+
+• HTML reporting dashboard
+• Improved device fingerprinting
+• Visualization of network assets
+• CLI installation as a system tool
+• Integration with monitoring systems
+
+---
+
+## License
+
+This project is intended for educational and research purposes.
