@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Network Asset Monitor Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        h1, h2, h3 {
+            color: #f8fafc;
+        }
+        .subtle {
+            color: #cbd5e1;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0 28px 0;
+        }
+        .card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .card-title {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        .card-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f8fafc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #111827;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+        th, td {
+            border-bottom: 1px solid #1f2937;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        th {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        tr:hover {
+            background: #0b1220;
+        }
+        .risk-badge, .verify-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .risk-high {
+            background: #7f1d1d;
+            color: #fecaca;
+        }
+        .risk-medium {
+            background: #78350f;
+            color: #fde68a;
+        }
+        .risk-low {
+            background: #14532d;
+            color: #bbf7d0;
+        }
+        .verify-high {
+            background: #0c4a6e;
+            color: #bae6fd;
+        }
+        .verify-medium {
+            background: #3f3f46;
+            color: #e4e4e7;
+        }
+        .verify-low {
+            background: #3f1d38;
+            color: #f5d0fe;
+        }
+        .panel {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+        ul {
+            margin-top: 8px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        code {
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Network Asset Monitor Report</h1>
+        <p class="subtle">Generated: 2026-03-16 20:04:57</p>
+        <p class="subtle">
+            Network: <code>172.16.24.0/24</code> |
+            Local IP: <code>172.16.24.106</code> |
+            Gateway: <code>172.16.1.1</code> |
+            Strict Mode: <code>True</code> |
+            Filtered Out: <code>245</code>
+        </p>
+
+        
+    <div class="cards">
+        <div class="card">
+            <div class="card-title">Total Devices</div>
+            <div class="card-value">9</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Verified</div>
+            <div class="card-value">9</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Likely Real</div>
+            <div class="card-value">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Unverified</div>
+            <div class="card-value">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">High Risk</div>
+            <div class="card-value">0</div>
+        </div>
+    </div>
+    
+
+        <div class="grid-2">
+            <div class="panel">
+                <h2>Device Type Summary</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device Type</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+        <tr>
+            <td>Router / Network Device</td>
+            <td>8</td>
+        </tr>
+        
+        <tr>
+            <td>Unknown Device</td>
+            <td>1</td>
+        </tr>
+        
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h2>Change Summary</h2>
+                <h3>Added</h3>
+                <ul>
+                    <li><strong>172.16.24.2</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.12</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.66</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.106</strong> - Unknown Device - Verified</li><li><strong>172.16.24.108</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.158</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.177</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.195</strong> - Router / Network Device - Verified</li><li><strong>172.16.24.207</strong> - Router / Network Device - Verified</li>
+                </ul>
+
+                <h3>Removed</h3>
+                <ul>
+                    <li>No removed devices detected</li>
+                </ul>
+
+                <h3>Changed</h3>
+                <ul>
+                    <li>No changed devices detected</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Discovered Devices</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>Hostname</th>
+                    <th>Role</th>
+                    <th>Device Type</th>
+                    <th>OS Guess</th>
+                    <th>Open Ports</th>
+                    <th>Banners</th>
+                    <th>Risk</th>
+                    <th>Verification</th>
+                    <th>Confidence</th>
+                    <th>Hard Evidence</th>
+                    <th>Confidence Reasons</th>
+                    <th>Security Flags</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td>172.16.24.106</td>
+            <td>Friday-lab</td>
+            <td>Local Host</td>
+            <td>Unknown Device</td>
+            <td>Unknown</td>
+            <td>None</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>100</td>
+            <td>99</td>
+            <td>Matched local host IP</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.12</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>90</td>
+            <td>4</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected<br>OS fingerprint detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.108</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>90</td>
+            <td>4</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected<br>OS fingerprint detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.177</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>90</td>
+            <td>4</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected<br>OS fingerprint detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.207</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>90</td>
+            <td>4</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected<br>OS fingerprint detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.2</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>80</td>
+            <td>3</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.66</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>80</td>
+            <td>3</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.158</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>80</td>
+            <td>3</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+        <tr>
+            <td>172.16.24.195</td>
+            <td></td>
+            <td>Device</td>
+            <td>Router / Network Device</td>
+            <td>Unknown</td>
+            <td>53(tcpwrapped)</td>
+            <td>None</td>
+            <td><span class="risk-badge risk-low">Low</span></td>
+            <td><span class="verify-badge verify-high">Verified</span></td>
+            <td>80</td>
+            <td>3</td>
+            <td>Open ports detected<br>MAC address detected<br>Vendor detected</td>
+            <td>No obvious issues</td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

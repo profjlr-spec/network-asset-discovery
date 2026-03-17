@@ -1,52 +1,283 @@
 {
-  "timestamp": "2026-03-14T18:52:49",
+  "scan_metadata": {
+    "scan_time": "2026-03-16 20:04:57",
+    "network": "172.16.24.0/24",
+    "local_ip": "172.16.24.106",
+    "gateway": "172.16.1.1",
+    "device_count": 9,
+    "strict_mode": true,
+    "filtered_out_count": 245
+  },
   "devices": [
     {
-      "ip": "10.0.0.1",
-      "mac": null,
-      "hostname": null,
+      "ip": "172.16.24.2",
+      "hostname": "",
       "role": "Device",
-      "device_type": "Unknown Device",
+      "device_type": "Router / Network Device",
       "os_guess": "Unknown",
       "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0020s",
       "open_ports": [
-        53,
-        80,
-        443
+        53
       ],
-      "banners": {
-        " 53": "domain",
-        " 80": "http",
-        " 443": "https"
-      },
-      "risk_level": "Medium",
-      "security_flags": []
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 80,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected"
+      ],
+      "hard_evidence_count": 3,
+      "last_seen": "2026-03-16 20:04:47"
     },
     {
-      "ip": "10.0.0.220",
-      "mac": null,
-      "hostname": null,
+      "ip": "172.16.24.12",
+      "hostname": "",
       "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0070s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 90,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected",
+        "OS fingerprint detected"
+      ],
+      "hard_evidence_count": 4,
+      "last_seen": "2026-03-16 20:04:48"
+    },
+    {
+      "ip": "172.16.24.66",
+      "hostname": "",
+      "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0020s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 80,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected"
+      ],
+      "hard_evidence_count": 3,
+      "last_seen": "2026-03-16 20:04:50"
+    },
+    {
+      "ip": "172.16.24.106",
+      "hostname": "Friday-lab",
+      "role": "Local Host",
       "device_type": "Unknown Device",
       "os_guess": "Unknown",
       "state": "up",
+      "mac": "",
+      "vendor": "",
+      "latency": "0.000074s",
       "open_ports": [],
-      "banners": {},
+      "open_ports_summary": "None",
+      "banners": [],
+      "banners_summary": "None",
       "risk_level": "Low",
-      "security_flags": []
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 100,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Matched local host IP"
+      ],
+      "hard_evidence_count": 99,
+      "last_seen": "2026-03-16 20:04:51"
     },
     {
-      "ip": "10.0.0.221",
-      "mac": null,
-      "hostname": null,
+      "ip": "172.16.24.108",
+      "hostname": "",
       "role": "Device",
-      "device_type": "Unknown Device",
+      "device_type": "Router / Network Device",
       "os_guess": "Unknown",
       "state": "up",
-      "open_ports": [],
-      "banners": {},
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0036s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
       "risk_level": "Low",
-      "security_flags": []
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 90,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected",
+        "OS fingerprint detected"
+      ],
+      "hard_evidence_count": 4,
+      "last_seen": "2026-03-16 20:04:52"
+    },
+    {
+      "ip": "172.16.24.158",
+      "hostname": "",
+      "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0031s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 80,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected"
+      ],
+      "hard_evidence_count": 3,
+      "last_seen": "2026-03-16 20:04:53"
+    },
+    {
+      "ip": "172.16.24.177",
+      "hostname": "",
+      "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0024s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 90,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected",
+        "OS fingerprint detected"
+      ],
+      "hard_evidence_count": 4,
+      "last_seen": "2026-03-16 20:04:54"
+    },
+    {
+      "ip": "172.16.24.195",
+      "hostname": "",
+      "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.011s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 80,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected"
+      ],
+      "hard_evidence_count": 3,
+      "last_seen": "2026-03-16 20:04:55"
+    },
+    {
+      "ip": "172.16.24.207",
+      "hostname": "",
+      "role": "Device",
+      "device_type": "Router / Network Device",
+      "os_guess": "Unknown",
+      "state": "up",
+      "mac": "00:50:E8:0A:27:C1",
+      "vendor": "Nomadix",
+      "latency": "0.0016s",
+      "open_ports": [
+        53
+      ],
+      "open_ports_summary": "53(tcpwrapped)",
+      "banners": [],
+      "banners_summary": "None",
+      "risk_level": "Low",
+      "security_flags": [
+        "No obvious issues"
+      ],
+      "confidence_score": 90,
+      "verification_status": "Verified",
+      "confidence_reasons": [
+        "Open ports detected",
+        "MAC address detected",
+        "Vendor detected",
+        "OS fingerprint detected"
+      ],
+      "hard_evidence_count": 4,
+      "last_seen": "2026-03-16 20:04:55"
     }
   ]
 }

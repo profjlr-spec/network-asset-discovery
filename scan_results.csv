@@ -1,4 +1,10 @@
-ip,role,device_type,state,open_ports,risk_level
-10.0.0.1,Device,Unknown Device,up,"53,80,443",Medium
-10.0.0.220,Device,Unknown Device,up,,Low
-10.0.0.221,Device,Unknown Device,up,,Low
+ip,hostname,role,device_type,os_guess,state,mac,vendor,latency,open_ports_summary,banners_summary,risk_level,security_flags,confidence_score,verification_status,hard_evidence_count,confidence_reasons,last_seen
+172.16.24.2,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0020s,53(tcpwrapped),None,Low,No obvious issues,80,Verified,3,Open ports detected | MAC address detected | Vendor detected,2026-03-16 20:04:47
+172.16.24.12,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0070s,53(tcpwrapped),None,Low,No obvious issues,90,Verified,4,Open ports detected | MAC address detected | Vendor detected | OS fingerprint detected,2026-03-16 20:04:48
+172.16.24.66,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0020s,53(tcpwrapped),None,Low,No obvious issues,80,Verified,3,Open ports detected | MAC address detected | Vendor detected,2026-03-16 20:04:50
+172.16.24.106,Friday-lab,Local Host,Unknown Device,Unknown,up,,,0.000074s,None,None,Low,No obvious issues,100,Verified,99,Matched local host IP,2026-03-16 20:04:51
+172.16.24.108,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0036s,53(tcpwrapped),None,Low,No obvious issues,90,Verified,4,Open ports detected | MAC address detected | Vendor detected | OS fingerprint detected,2026-03-16 20:04:52
+172.16.24.158,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0031s,53(tcpwrapped),None,Low,No obvious issues,80,Verified,3,Open ports detected | MAC address detected | Vendor detected,2026-03-16 20:04:53
+172.16.24.177,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0024s,53(tcpwrapped),None,Low,No obvious issues,90,Verified,4,Open ports detected | MAC address detected | Vendor detected | OS fingerprint detected,2026-03-16 20:04:54
+172.16.24.195,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.011s,53(tcpwrapped),None,Low,No obvious issues,80,Verified,3,Open ports detected | MAC address detected | Vendor detected,2026-03-16 20:04:55
+172.16.24.207,,Device,Router / Network Device,Unknown,up,00:50:E8:0A:27:C1,Nomadix,0.0016s,53(tcpwrapped),None,Low,No obvious issues,90,Verified,4,Open ports detected | MAC address detected | Vendor detected | OS fingerprint detected,2026-03-16 20:04:55
